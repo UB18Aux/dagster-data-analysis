@@ -1,0 +1,53 @@
+
+services:
+
+  # The dagster service, orchestrating the tasks
+  marketcrawler:
+    build: ./dagster/
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - dashboard-server
+      - price-api
+    env_file:
+      - .env
+    volumes:
+      - ./dagster/marketcrawler:/app/marketcrawler
+      - dashboards:/app/dashboards
+      - dagster_storage:/app/dagster_storage 
+    environment:
+      - DAGSTER_HOME=/app/dagster_storage 
+
+  # DB for storing the data we crawl and have
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d 
+
+  # Mock API endpoint used for getting price data.
+  price-api:
+    build: ./price-api/
+    ports:
+      - "8000:8000"
+
+  # Hosting the generated dashboards
+  dashboard-server:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - dashboards:/usr/share/nginx/html/dashboards:ro 
+      - ./dashboard-server/nginx.conf:/etc/nginx/nginx.conf:ro
+
+
+volumes:
+  # Make sure postgres data, generated dashboards and dagsters runs are persistent
+  postgres_data:
+  dashboards:
+  dagster_storage:

@@ -25,8 +25,9 @@ POSTGRES_HOST=db
 
 
 ### Docker Compose Up
+To install docker, check out [the Docker docs](https://docs.docker.com/get-started/get-docker/).
 
-Next step is to run the docker containers. Make sure to add the `--build` flag, as some containers need to be built. Add `-d` if you wanna hide what the containers are up to.
+If you have docker installed, the next step is to run the docker containers. Make sure to add the `--build` flag, as some containers need to be built. Add `-d` if you wanna hide what the containers are up to.
 
 ```bash
 docker compose up --build 

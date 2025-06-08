@@ -1,5 +1,5 @@
-from dagster import Definitions
-from .resources import Database
+import dagster as dg
+from .resources import Database, Api
 from .assets import (
     all_items,
     available_price_data,
@@ -7,14 +7,28 @@ from .assets import (
     generate_plotly_dashboard,
 )
 
-defs = Definitions(
+
+run_pipeline = dg.define_asset_job(
+    name="price_data_pipeline",
+    selection=[
+        "all_items",
+        "available_price_data",
+        "recent_price_data",
+        "generate_plotly_dashboard",
+    ],
+)
+defs = dg.Definitions(
     assets=[
         all_items,
         available_price_data,
         recent_price_data,
         generate_plotly_dashboard,
     ],
+    jobs=[
+        run_pipeline,
+    ],
     resources={
         "database": Database,
+        "api": Api,
     },
 )

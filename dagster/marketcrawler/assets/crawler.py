@@ -1,8 +1,7 @@
 import dagster as dg
 import pandas as pd
-from marketcrawler.resources import DatabaseResource
+from marketcrawler.resources import DatabaseResource, ApiEndpointResource
 from datetime import datetime, timedelta, timezone
-import requests as req
 
 
 def determine_missing_combinations(
@@ -49,6 +48,7 @@ def determine_missing_combinations(
 def crawl_missing_price_data(
     context: dg.AssetExecutionContext,
     missing_combinations: pd.DataFrame,
+    api: ApiEndpointResource,
 ) -> list[dict]:
     """Crawls all price and volume points for missing pairs of (item_id, day, hour)."""
 
@@ -65,12 +65,9 @@ def crawl_missing_price_data(
         dt = datetime(current_year, 1, 1) + timedelta(days=day_of_year - 1, hours=hour)
         try:
             # Call the api
-            response = req.get(
-                f"http://price-api:8000/price",
-                params={
-                    "item_id": item_id,
-                    "time": dt.isoformat(),
-                },
+            response = api.request(
+                item_id=str(item_id),
+                time=dt.isoformat(),
             )
             # Various checks to make we successfully got data
             response.raise_for_status()
@@ -129,6 +126,7 @@ def recent_price_data(
     all_items: pd.DataFrame,
     available_price_data: pd.DataFrame,
     database: DatabaseResource,
+    api: ApiEndpointResource,
 ) -> pd.DataFrame:
     """Returns recent price data for the past 10 days. Determines what is missing, crawls it, stores it in the database."""
 
@@ -154,7 +152,7 @@ def recent_price_data(
         context.log.info(
             f"Found {len(missing_combinations)} missing combinations. Starting to crawl"
         )
-        new_entries = crawl_missing_price_data(context, missing_combinations)
+        new_entries = crawl_missing_price_data(context, missing_combinations, api)
 
         # Insert the new data
         context.log.info(

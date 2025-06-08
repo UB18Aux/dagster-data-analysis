@@ -8,22 +8,6 @@ An example project for a data analysis pipeline using Dagster. The pipeline craw
 The Data Pipeline in Dagster.
 ## Quickstart
 
-### Env File
-
-First, create an `.env` file. Either just rename `example.env`, or make sure the following values are set:
-
-```bash
-# Set as you like
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=very-secure-password
-POSTGRES_DB=database
-
-# Do not modify
-POSTGRES_PORT=5432
-POSTGRES_HOST=db
-```
-
-
 ### Docker Compose Up
 To install docker, check out [the Docker docs](https://docs.docker.com/get-started/get-docker/).
 

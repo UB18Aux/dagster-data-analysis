@@ -7,9 +7,8 @@ from .assets import (
     generate_plotly_dashboard,
 )
 
-
-run_pipeline = dg.define_asset_job(
-    name="price_data_pipeline",
+run_pipeline_job = dg.define_asset_job(
+    name="complete_pipeline_job",
     selection=[
         "all_items",
         "available_price_data",
@@ -17,6 +16,22 @@ run_pipeline = dg.define_asset_job(
         "generate_plotly_dashboard",
     ],
 )
+
+crawl_job = dg.define_asset_job(
+    name="crawling_recent_data_job",
+    selection=[
+        "all_items",
+        "available_price_data",
+        "recent_price_data",
+    ],
+)
+
+daily_schedule = dg.ScheduleDefinition(
+    job=crawl_job,
+    cron_schedule="0 * * * *",
+    default_status=dg.DefaultScheduleStatus.RUNNING,
+)
+
 defs = dg.Definitions(
     assets=[
         all_items,
@@ -25,7 +40,10 @@ defs = dg.Definitions(
         generate_plotly_dashboard,
     ],
     jobs=[
-        run_pipeline,
+        run_pipeline_job,
+    ],
+    schedules=[
+        daily_schedule,
     ],
     resources={
         "database": Database,
